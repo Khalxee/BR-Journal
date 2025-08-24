@@ -31,6 +31,23 @@ if 'RAILWAY_ENVIRONMENT' in os.environ:
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# CSRF trusted origins for Railway deployment
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'https://br-journal.up.railway.app',
+    'http://br-journal.up.railway.app',
+]
+
+# Add dynamic Railway domains to CSRF trusted origins
+if 'RAILWAY_ENVIRONMENT' in os.environ:
+    CSRF_TRUSTED_ORIGINS.extend([
+        'https://*.railway.app',
+        'https://*.up.railway.app',
+        'http://*.railway.app', 
+        'http://*.up.railway.app',
+    ])
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
