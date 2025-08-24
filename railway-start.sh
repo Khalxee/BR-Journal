@@ -2,10 +2,10 @@
 echo "🚂 Starting BR Journal on Railway..."
 
 # Run database migrations
-python manage.py migrate
+python3 manage.py migrate
 
 # Create sample data if database is empty (first deploy)
-python manage.py shell -c "
+python3 manage.py shell -c "
 from django.contrib.auth.models import User
 from apps.journal.models import Department
 if not User.objects.exists():
@@ -20,7 +20,7 @@ else:
 "
 
 # Collect static files
-python manage.py collectstatic --noinput
+python3 manage.py collectstatic --noinput
 
 # Start the server
-python manage.py runserver 0.0.0.0:$PORT
+python3 manage.py runserver 0.0.0.0:$PORT
