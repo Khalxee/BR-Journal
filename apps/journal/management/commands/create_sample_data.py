@@ -10,6 +10,29 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Creating sample data for BR Journal...'))
 
+        # Create admin user first
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'email': 'admin@brjournal.com',
+                'first_name': 'System',
+                'last_name': 'Administrator',
+                'is_staff': True,
+                'is_superuser': True,
+            }
+        )
+        if created:
+            admin_user.set_password('admin123')
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS('✅ Created admin user: admin/admin123'))
+        else:
+            # Update existing admin to ensure proper permissions
+            admin_user.is_staff = True
+            admin_user.is_superuser = True
+            admin_user.set_password('admin123')
+            admin_user.save()
+            self.stdout.write(self.style.SUCCESS('✅ Updated admin user: admin/admin123'))
+
         # Create sample departments
         departments_data = [
             ('Engineering', 'Software Development and Technical Team'),

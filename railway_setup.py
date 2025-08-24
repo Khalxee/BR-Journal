@@ -38,17 +38,48 @@ def run_setup():
     except Exception as e:
         print(f"Site creation error: {e}")
     
-    # Check if we need sample data
+    # Check if we need sample data and admin user
     try:
         from django.contrib.auth.models import User
-        if not User.objects.exists():
-            print("📊 Creating sample data...")
+        
+        # Force create admin user
+        print("👑 Creating/updating admin user...")
+        try:
+            admin_user = User.objects.get(username='admin')
+            # Update existing admin
+            admin_user.set_password('admin123')
+            admin_user.is_superuser = True
+            admin_user.is_staff = True
+            admin_user.save()
+            print("✅ Updated existing admin user: admin/admin123")
+        except User.DoesNotExist:
+            # Create new admin
+            admin_user = User.objects.create_superuser(
+                username='admin',
+                email='admin@brjournal.com', 
+                password='admin123'
+            )
+            print("✅ Created new admin user: admin/admin123")
+        
+        # Check total user count for sample data
+        user_count = User.objects.count()
+        print(f"📊 Total users in database: {user_count}")
+        
+        if user_count <= 1:  # Only admin exists
+            print("📊 Creating sample team members...")
             execute_from_command_line(['manage.py', 'create_sample_data'])
             print("✅ Sample data created!")
         else:
-            print("✅ Database already has users")
+            print("✅ Sample users already exist")
+            
     except Exception as e:
-        print(f"Sample data error: {e}")
+        print(f"❌ User creation error: {e}")
+        # Try creating admin via management command as fallback
+        try:
+            execute_from_command_line(['manage.py', 'shell', '-c', 
+                "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@example.com', 'admin123') if not User.objects.filter(username='admin').exists() else print('Admin exists')"])
+        except Exception as fallback_error:
+            print(f"❌ Fallback admin creation failed: {fallback_error}")
     
     print("🎨 Collecting static files...")
     try:
