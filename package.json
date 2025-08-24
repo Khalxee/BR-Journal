@@ -1,12 +1,16 @@
 {
   "name": "br-journal",
   "version": "1.0.0",
-  "description": "Team Weekly Journal Application",
-  "main": "index.js",
+  "description": "Team Weekly Journal Application - Django Backend",
+  "main": "manage.py",
   "scripts": {
-    "dev": "echo 'Frontend development server'",
-    "build": "echo 'Frontend build'",
-    "test": "echo 'No tests specified'"
+    "dev": "python manage.py runserver",
+    "build": "python manage.py collectstatic --noinput && echo 'Build completed'",
+    "start": "python manage.py runserver",
+    "test": "python manage.py test"
+  },
+  "engines": {
+    "python": "3.9.x"
   },
   "dependencies": {},
   "devDependencies": {}
