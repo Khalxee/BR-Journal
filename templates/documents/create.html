@@ -1,0 +1,382 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ app_name }} - Create Document{% endblock %}
+
+{% block extra_css %}
+/* Override base template container for full-width form */
+.container {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.container::before {
+    display: none !important;
+}
+
+body {
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.form-container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+.form-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.form-content {
+    padding: 40px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row.full-width {
+    grid-template-columns: 1fr;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.body-textarea {
+    min-height: 200px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid #e1e5e9;
+}
+
+.btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1rem;
+    min-width: 140px;
+}
+
+.btn-draft {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-draft:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-email {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-email:hover {
+    background: #138496;
+    transform: translateY(-2px);
+}
+
+.btn-export {
+    background: #28a745;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #218838;
+    transform: translateY(-2px);
+}
+
+.btn-cancel {
+    background: #f8f9fa;
+    color: #333;
+    border: 1px solid #e1e5e9;
+}
+
+.btn-cancel:hover {
+    background: #e9ecef;
+}
+
+.required {
+    color: #dc3545;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+    .form-container {
+        margin: 10px;
+    }
+    
+    .form-content {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>📄 Create New Document</h1>
+        <p>Fill in the details below to create your document</p>
+    </div>
+    
+    <div class="form-content">
+        <form method="post" id="documentForm">
+            {% csrf_token %}
+            
+            <!-- Document Information -->
+            <div class="form-section">
+                <h3 class="section-title">📋 Document Information</h3>
+                
+                <div class="form-group">
+                    <label for="title">Document Title <span class="required">*</span></label>
+                    <input type="text" id="title" name="title" required placeholder="Enter document title">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="document_type">Document Type <span class="required">*</span></label>
+                        <select id="document_type" name="document_type" required>
+                            <option value="">Select document type...</option>
+                            {% for doc_type in document_types %}
+                                <option value="{{ doc_type.id }}">{{ doc_type.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="letterhead">Letterhead <span class="required">*</span></label>
+                        <select id="letterhead" name="letterhead" required>
+                            <option value="">Select letterhead...</option>
+                            {% for letterhead in letterheads %}
+                                <option value="{{ letterhead.id }}">{{ letterhead.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="date">Document Date <span class="required">*</span></label>
+                    <input type="date" id="date" name="date" required value="{{ today|date:'Y-m-d' }}">
+                </div>
+            </div>
+            
+            <!-- Addressee Information -->
+            <div class="form-section">
+                <h3 class="section-title">👤 Addressee Information</h3>
+                
+                <div class="form-group">
+                    <label for="addressee_name">Addressee Name <span class="required">*</span></label>
+                    <input type="text" id="addressee_name" name="addressee_name" required placeholder="Enter recipient's name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="addressee_address">Addressee Address <span class="required">*</span></label>
+                    <textarea id="addressee_address" name="addressee_address" required placeholder="Enter complete address"></textarea>
+                </div>
+            </div>
+            
+            <!-- Document Content -->
+            <div class="form-section">
+                <h3 class="section-title">📝 Document Content</h3>
+                
+                <div class="form-group">
+                    <label for="body">Document Body <span class="required">*</span></label>
+                    <textarea id="body" name="body" class="body-textarea" required placeholder="Enter the main content of your document"></textarea>
+                    <div class="help-text">Write the main content of your document here.</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="salutation">Salutation</label>
+                    <input type="text" id="salutation" name="salutation" value="Sincerely" placeholder="Enter closing salutation">
+                </div>
+            </div>
+            
+            <!-- Signature and Authentication -->
+            <div class="form-section">
+                <h3 class="section-title">✍️ Signature & Authentication</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="signatory">Signatory</label>
+                        <select id="signatory" name="signatory">
+                            <option value="">Select signatory...</option>
+                            {% for signatory in signatories %}
+                                <option value="{{ signatory.id }}">{{ signatory.name }} - {{ signatory.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="qr_code">QR Code</label>
+                        <select id="qr_code" name="qr_code">
+                            <option value="">Select QR code...</option>
+                            {% for qr in qr_codes %}
+                                <option value="{{ qr.id }}">{{ qr.name }} ({{ qr.qr_type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button type="submit" name="action" value="save_draft" class="btn btn-draft">
+                    💾 Save as Draft
+                </button>
+                <button type="submit" name="action" value="send_email" class="btn btn-email">
+                    📧 Send via Email
+                </button>
+                <button type="submit" name="action" value="export" class="btn btn-export">
+                    📥 Export PDF
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn btn-cancel">
+                    ❌ Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Set today's date as default
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    if (!dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+    
+    // Auto-resize textarea
+    const textarea = document.getElementById('body');
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+});
+
+// Form validation
+document.getElementById('documentForm').addEventListener('submit', function(e) {
+    const title = document.getElementById('title').value.trim();
+    const docType = document.getElementById('document_type').value;
+    const letterhead = document.getElementById('letterhead').value;
+    const addresseeName = document.getElementById('addressee_name').value.trim();
+    const addresseeAddress = document.getElementById('addressee_address').value.trim();
+    const body = document.getElementById('body').value.trim();
+    
+    if (!title || !docType || !letterhead || !addresseeName || !addresseeAddress || !body) {
+        e.preventDefault();
+        alert('Please fill in all required fields marked with *');
+        return false;
+    }
+});
+</script>
+{% endblock %}

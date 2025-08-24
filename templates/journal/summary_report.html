@@ -1,0 +1,530 @@
+{% extends 'journal/base.html' %}
+{% load journal_tags %}
+
+{% block title %}Summary Report - BR Journal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-chart-bar text-primary"></i>
+        Summary Report
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'journal:export_summary' %}?{{ request.GET.urlencode }}&format=html" 
+               target="_blank" class="btn btn-outline-primary" title="Print View">
+                <i class="fas fa-print"></i> Print
+            </a>
+            <a href="{% url 'journal:export_summary' %}?{{ request.GET.urlencode }}&format=csv" 
+               class="btn btn-outline-success" title="Export to CSV">
+                <i class="fas fa-download"></i> Export CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-filter"></i> Filters & Options
+            <button class="btn btn-sm btn-outline-secondary float-end" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </h5>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Date Range -->
+                <div class="col-md-3">
+                    <label class="form-label">Date From</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Date To</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+                
+                <!-- Department Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Department</label>
+                    <select name="department" class="form-select">
+                        <option value="">All Departments</option>
+                        {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if selected_department == dept.id|stringformat:'s' %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Author Filter -->
+                <div class="col-md-3">
+                    <label class="form-label">Author</label>
+                    <select name="author" class="form-select">
+                        <option value="">All Authors</option>
+                        {% for author in authors %}
+                            <option value="{{ author.author__id }}" {% if selected_author == author.author__id|stringformat:'s' %}selected{% endif %}>
+                                {{ author.author__first_name }} {{ author.author__last_name|default:author.author__username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Search -->
+                <div class="col-md-6">
+                    <label class="form-label">Search Content</label>
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search in journal entries..." value="{{ search_query }}">
+                </div>
+                
+                <!-- Group By -->
+                <div class="col-md-3">
+                    <label class="form-label">Group By</label>
+                    <select name="group_by" class="form-select">
+                        <option value="date" {% if group_by == 'date' %}selected{% endif %}>Date</option>
+                        <option value="department" {% if group_by == 'department' %}selected{% endif %}>Department</option>
+                        <option value="author" {% if group_by == 'author' %}selected{% endif %}>Author</option>
+                    </select>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <a href="{% url 'journal:summary_report' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Entries</h5>
+                        <h2>{{ stats.total_entries }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Departments</h5>
+                        <h2>{{ stats.departments_count }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Authors</h5>
+                        <h2>{{ stats.authors_count }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Items</h5>
+                        <h2>{{ status_summary.total_items }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-list-ul fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Display -->
+<div class="alert alert-info">
+    <i class="fas fa-calendar-alt"></i>
+    <strong>Showing entries for:</strong> {{ stats.date_range }}
+    {% if search_query %}
+        <br><i class="fas fa-search"></i>
+        <strong>Search:</strong> "{{ search_query }}"
+    {% endif %}
+</div>
+
+<!-- Status Overview -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-pie"></i> Overall Status Distribution
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md">
+                <div class="p-3 bg-success bg-opacity-10 rounded">
+                    <i class="fas fa-check-circle text-success fa-lg mb-2"></i>
+                    <div class="fw-bold fs-4">{{ status_summary.completed }}</div>
+                    <small class="text-muted">Completed</small>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-3 bg-primary bg-opacity-10 rounded">
+                    <i class="fas fa-clock text-primary fa-lg mb-2"></i>
+                    <div class="fw-bold fs-4">{{ status_summary.in_progress }}</div>
+                    <small class="text-muted">In Progress</small>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-3 bg-warning bg-opacity-10 rounded">
+                    <i class="fas fa-pause-circle text-warning fa-lg mb-2"></i>
+                    <div class="fw-bold fs-4">{{ status_summary.on_hold }}</div>
+                    <small class="text-muted">On Hold</small>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                    <i class="fas fa-circle text-secondary fa-lg mb-2"></i>
+                    <div class="fw-bold fs-4">{{ status_summary.not_started }}</div>
+                    <small class="text-muted">Not Started</small>
+                </div>
+            </div>
+            {% if status_summary.cancelled > 0 %}
+            <div class="col-md">
+                <div class="p-3 bg-danger bg-opacity-10 rounded">
+                    <i class="fas fa-times-circle text-danger fa-lg mb-2"></i>
+                    <div class="fw-bold fs-4">{{ status_summary.cancelled }}</div>
+                    <small class="text-muted">Cancelled</small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Journal Entries -->
+{% if grouped_entries %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-journal-whills"></i> 
+                Journal Entries 
+                <span class="badge bg-primary ms-2">{{ stats.total_entries }}</span>
+                <small class="text-muted">- Grouped by {{ group_by|title }}</small>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for group_name, entries in grouped_entries.items %}
+                <div class="group-section mb-4">
+                    <div class="group-header d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <h4 class="text-primary mb-0">
+                            {% if group_by == 'department' %}
+                                <i class="fas fa-building"></i> {{ group_name }}
+                            {% elif group_by == 'author' %}
+                                <i class="fas fa-user"></i> {{ group_name }}
+                            {% else %}
+                                <i class="fas fa-calendar"></i> {{ group_name }}
+                            {% endif %}
+                        </h4>
+                        <span class="badge bg-secondary fs-6">{{ entries|length }} entries</span>
+                    </div>
+                    
+                    <div class="entries-grid">
+                        {% for entry in entries %}
+                            <div class="entry-card mb-3 p-3 border rounded bg-light">
+                                <div class="entry-header d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {% if group_by != 'author' %}
+                                                <i class="fas fa-user text-info"></i>
+                                                {{ entry.author.get_full_name|default:entry.author.username }}
+                                            {% endif %}
+                                            {% if group_by != 'department' %}
+                                                <i class="fas fa-building text-success ms-2"></i>
+                                                {{ entry.department.name }}
+                                            {% endif %}
+                                        </h6>
+                                        {% if group_by != 'date' %}
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar"></i>
+                                                {{ entry.date_from|date:"M d" }} - {{ entry.date_to|date:"M d, Y" }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-end">
+                                        <a href="{% url 'journal:detail' entry.pk %}" 
+                                           class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if entry.author == request.user %}
+                                            <a href="{% url 'journal:update' entry.pk %}" 
+                                               class="btn btn-sm btn-outline-warning ms-1" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="entry-content">
+                                    <!-- Highlights -->
+                                    {% if entry.get_highlights_list %}
+                                        <div class="section mb-2">
+                                            <strong class="text-warning">
+                                                <i class="fas fa-star"></i> Highlights ({{ entry.get_highlights_list|length }})
+                                            </strong>
+                                            <ul class="list-unstyled ms-3 mb-2">
+                                                {% for highlight in entry.get_highlights_list|slice:":3" %}
+                                                    <li class="mb-1">
+                                                        <span class="badge bg-{{ highlight.status|get_status_color }} me-2">
+                                                            <i class="fas fa-{{ highlight.status|get_status_icon }}"></i>
+                                                        </span>
+                                                        {{ highlight.text|truncatechars:100 }}
+                                                    </li>
+                                                {% endfor %}
+                                                {% if entry.get_highlights_list|length > 3 %}
+                                                    <li class="text-muted small">
+                                                        <i class="fas fa-plus"></i> {{ entry.get_highlights_list|length|add:"-3" }} more...
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Challenges -->
+                                    {% if entry.get_challenges_list %}
+                                        <div class="section mb-2">
+                                            <strong class="text-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Challenges ({{ entry.get_challenges_list|length }})
+                                            </strong>
+                                            <ul class="list-unstyled ms-3 mb-2">
+                                                {% for challenge in entry.get_challenges_list|slice:":2" %}
+                                                    <li class="mb-1">
+                                                        <span class="badge bg-{{ challenge.status|get_status_color }} me-2">
+                                                            <i class="fas fa-{{ challenge.status|get_status_icon }}"></i>
+                                                        </span>
+                                                        {{ challenge.text|truncatechars:100 }}
+                                                    </li>
+                                                {% endfor %}
+                                                {% if entry.get_challenges_list|length > 2 %}
+                                                    <li class="text-muted small">
+                                                        <i class="fas fa-plus"></i> {{ entry.get_challenges_list|length|add:"-2" }} more...
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Pendings and Strategies (condensed) -->
+                                    <div class="row">
+                                        {% if entry.get_pendings_list %}
+                                            <div class="col-md-6">
+                                                <small class="text-info">
+                                                    <i class="fas fa-clock"></i> 
+                                                    <strong>Pendings:</strong> {{ entry.get_pendings_list|length }} items
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        {% if entry.get_strategies_list %}
+                                            <div class="col-md-6">
+                                                <small class="text-primary">
+                                                    <i class="fas fa-lightbulb"></i> 
+                                                    <strong>Strategies:</strong> {{ entry.get_strategies_list|length }} items
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        {% if entry.get_personal_updates_list %}
+                                            <div class="col-md-6">
+                                                <small class="text-success">
+                                                    <i class="fas fa-user"></i> 
+                                                    <strong>Personal:</strong> {{ entry.get_personal_updates_list|length }} updates
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                        {% if entry.comments.count > 0 %}
+                                            <div class="col-md-6">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-comments"></i> 
+                                                    <strong>Comments:</strong> {{ entry.comments.count }}
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% else %}
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4>No Entries Found</h4>
+            <p class="text-muted mb-4">
+                No journal entries match the selected filters.
+                {% if search_query or date_from or date_to or selected_department or selected_author %}
+                    <br>Try adjusting your filters or search terms.
+                {% else %}
+                    <br>Create your first journal entry to get started!
+                {% endif %}
+            </p>
+            <div class="d-flex gap-2 justify-content-center">
+                {% if search_query or date_from or date_to or selected_department or selected_author %}
+                    <a href="{% url 'journal:summary_report' %}" class="btn btn-primary">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </a>
+                {% endif %}
+                <a href="{% url 'journal:create' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Create Entry
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Quick Actions Footer -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-rocket"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <a href="{% url 'journal:create' %}" class="btn btn-success btn-sm w-100 mb-2">
+                            <i class="fas fa-plus"></i><br>New Entry
+                        </a>
+                        <small class="text-muted">Create journal entry</small>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'journal:list' %}" class="btn btn-primary btn-sm w-100 mb-2">
+                            <i class="fas fa-list"></i><br>All Entries
+                        </a>
+                        <small class="text-muted">Detailed list view</small>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'journal:dashboard' %}" class="btn btn-info btn-sm w-100 mb-2">
+                            <i class="fas fa-tachometer-alt"></i><br>Dashboard
+                        </a>
+                        <small class="text-muted">Analytics overview</small>
+                    </div>
+                    {% if user.is_staff or user.is_superuser %}
+                        <div class="col-md-3">
+                            <a href="{% url 'journal:topman_report_list' %}" class="btn btn-warning btn-sm w-100 mb-2">
+                                <i class="fas fa-crown"></i><br>Top Management
+                            </a>
+                            <small class="text-muted">Executive reports</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.entry-card {
+    transition: all 0.2s ease;
+    border-left: 4px solid #007bff !important;
+}
+
+.entry-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transform: translateY(-1px);
+}
+
+.group-section {
+    break-inside: avoid;
+}
+
+.entries-grid {
+    columns: 1;
+}
+
+@media (min-width: 992px) {
+    .entries-grid {
+        columns: 2;
+        column-gap: 1rem;
+    }
+}
+
+.entry-card {
+    break-inside: avoid;
+}
+
+.badge-status {
+    font-size: 0.7rem;
+}
+
+@media print {
+    .btn-toolbar,
+    #filterCollapse,
+    .card-header button {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit form when certain fields change
+    const autoSubmitFields = document.querySelectorAll('select[name="group_by"]');
+    autoSubmitFields.forEach(field => {
+        field.addEventListener('change', function() {
+            // Small delay to show the change
+            setTimeout(() => {
+                this.closest('form').submit();
+            }, 100);
+        });
+    });
+    
+    // Keyboard shortcut for search
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+[project]
+name = "docuapp"
+version = "0.1.0"
+description = "Document management application"
+requires-python = ">=3.12"
+dependencies = [
+    "Django>=4.2.7",
+    "psycopg2-binary>=2.9.9",
+    "python-dotenv>=1.0.0",
+    "celery>=5.3.4",
+    "redis>=5.0.1",
+    "Pillow>=10.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.django-stubs]
+django_settings_module = "docuapp.settings"
+
+[tool.hatch.build.targets.wheel]
+packages = ["apps", "docuapp"]

@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+
+{% block title %}Create User - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+.checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.role-selection {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.info-box {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <div class="header-content">
+        <div>
+            <h1 style="margin: 0;">👤 Create User</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.8;">Add a new user to DocuApp</p>
+        </div>
+        <div>
+            <a href="{% url 'user_management' %}" class="btn btn-secondary">← Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<div class="form-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="info-box">
+        <strong>Creating a new user account</strong><br>
+        This will create a standard user account with access to DocuApp features. You can modify permissions after creation.
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" required>
+            </div>
+        </div>
+
+        <!-- Account Details -->
+        <div class="form-group">
+            <label for="username">Username *</label>
+            <input type="text" id="username" name="username" class="form-control" required 
+                   placeholder="Enter unique username">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" class="form-control" required 
+                   placeholder="user@example.com">
+        </div>
+
+        <!-- Password -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" class="form-control" required 
+                       placeholder="Enter secure password">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password *</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required 
+                       placeholder="Confirm password">
+            </div>
+        </div>
+
+        <!-- User Permissions -->
+        <div class="role-selection">
+            <h4 style="margin-bottom: 15px;">User Permissions</h4>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_active" name="is_active" checked>
+                <label for="is_active">
+                    <strong>Active Account</strong><br>
+                    <small>User can log in and access the system</small>
+                </label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_staff" name="is_staff">
+                <label for="is_staff">
+                    <strong>Staff Status</strong><br>
+                    <small>User can access the admin interface</small>
+                </label>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="is_superuser" name="is_superuser">
+                <label for="is_superuser">
+                    <strong>Superuser Status</strong><br>
+                    <small>User has all permissions without explicitly assigning them</small>
+                </label>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">👤 Create User</button>
+            <a href="{% url 'user_management' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password confirmation validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords don't match");
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('input', validatePassword);
+    confirmPassword.addEventListener('input', validatePassword);
+    
+    // Auto-enable staff when superuser is checked
+    const isStaff = document.getElementById('is_staff');
+    const isSuperuser = document.getElementById('is_superuser');
+    
+    isSuperuser.addEventListener('change', function() {
+        if (this.checked) {
+            isStaff.checked = true;
+        }
+    });
+    
+    // Auto-generate username from first name and last name
+    const firstName = document.getElementById('first_name');
+    const lastName = document.getElementById('last_name');
+    const username = document.getElementById('username');
+    
+    function generateUsername() {
+        if (firstName.value && lastName.value && !username.value) {
+            const suggested = (firstName.value + '.' + lastName.value).toLowerCase().replace(/\s+/g, '');
+            username.placeholder = `Suggested: ${suggested}`;
+        }
+    }
+    
+    firstName.addEventListener('input', generateUsername);
+    lastName.addEventListener('input', generateUsername);
+});
+</script>
+{% endblock %}

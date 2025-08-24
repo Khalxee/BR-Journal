@@ -1,0 +1,255 @@
+{% extends 'journal/base.html' %}
+{% load journal_tags %}
+
+{% block title %}Dashboard - BR Journal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Entries</h5>
+                        <h2>{{ total_journals }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Your Entries</h5>
+                        <h2>{{ user_journal_count }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-user-edit fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">Departments</h5>
+                        <h2>{{ departments.count }}</h2>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <h5 class="card-title">This Week</h5>
+                        <p class="mb-0">{{ suggested_date_from }} to {{ suggested_date_to }}</p>
+                    </div>
+                    <div class="ms-auto">
+                        <i class="fas fa-calendar-week fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Tracking Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Status Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Overall Status Summary -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3"><i class="fas fa-globe"></i> Team-wide Status</h6>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-success bg-opacity-10 rounded">
+                                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ status_summary.completed }}</div>
+                                    <small class="text-muted">Completed</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-primary bg-opacity-10 rounded">
+                                    <i class="fas fa-clock text-primary fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ status_summary.in_progress }}</div>
+                                    <small class="text-muted">In Progress</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-warning bg-opacity-10 rounded">
+                                    <i class="fas fa-pause-circle text-warning fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ status_summary.on_hold }}</div>
+                                    <small class="text-muted">On Hold</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-1">
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-secondary bg-opacity-10 rounded">
+                                    <i class="fas fa-circle text-secondary"></i>
+                                    <span class="ms-1"><strong>{{ status_summary.not_started }}</strong> Not Started</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-danger bg-opacity-10 rounded">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                    <span class="ms-1"><strong>{{ status_summary.cancelled }}</strong> Cancelled</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2 p-2 bg-light rounded">
+                            <strong>Total Items: {{ status_summary.total_items }}</strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Your Personal Status Summary -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3"><i class="fas fa-user"></i> Your Status</h6>
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-success bg-opacity-20 rounded">
+                                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ user_status_summary.completed }}</div>
+                                    <small class="text-muted">Completed</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-primary bg-opacity-20 rounded">
+                                    <i class="fas fa-clock text-primary fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ user_status_summary.in_progress }}</div>
+                                    <small class="text-muted">In Progress</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-center p-3 bg-warning bg-opacity-20 rounded">
+                                    <i class="fas fa-pause-circle text-warning fa-lg"></i>
+                                    <div class="fw-bold fs-4">{{ user_status_summary.on_hold }}</div>
+                                    <small class="text-muted">On Hold</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-1">
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-secondary bg-opacity-20 rounded">
+                                    <i class="fas fa-circle text-secondary"></i>
+                                    <span class="ms-1"><strong>{{ user_status_summary.not_started }}</strong> Not Started</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center p-2 bg-danger bg-opacity-20 rounded">
+                                    <i class="fas fa-times-circle text-danger"></i>
+                                    <span class="ms-1"><strong>{{ user_status_summary.cancelled }}</strong> Cancelled</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2 p-2 bg-light rounded">
+                            <strong>Your Total Items: {{ user_status_summary.total_items }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-rocket"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'journal:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create New Entry
+                    </a>
+                    <a href="{% url 'journal:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> View All Entries
+                    </a>
+                    <a href="{% url 'journal:summary_report' %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar"></i> Summary Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Your Recent Entries -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user-edit"></i> Your Recent Entries</h5>
+            </div>
+            <div class="card-body">
+                {% if user_journals %}
+                    {% for journal in user_journals %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <h6><a href="{% url 'journal:detail' journal.pk %}" class="text-decoration-none">
+                                {{ journal.department.name }} - {{ journal.date_from }} to {{ journal.date_to }}
+                            </a></h6>
+                            <p class="text-muted small mb-1">{{ journal.highlights|truncatewords:15 }}</p>
+                            <small class="text-muted">Created: {{ journal.created_at|date:"M d, Y" }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No entries yet. <a href="{% url 'journal:create' %}">Create your first entry</a>!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-globe"></i> Recent Team Entries</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_journals %}
+                    {% for journal in recent_journals %}
+                        <div class="border-bottom pb-2 mb-2">
+                            <h6><a href="{% url 'journal:detail' journal.pk %}" class="text-decoration-none">
+                                {{ journal.author.get_full_name|default:journal.author.username }} - {{ journal.department.name }}
+                            </a></h6>
+                            <p class="text-muted small mb-1">{{ journal.highlights|truncatewords:10 }}</p>
+                            <small class="text-muted">{{ journal.date_from }} to {{ journal.date_to }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No team entries yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

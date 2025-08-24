@@ -1,0 +1,320 @@
+{% load journal_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Summary Report - {{ export_date }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .page-break { page-break-before: always; }
+            body { font-size: 12px; }
+            .card { border: 1px solid #dee2e6 !important; box-shadow: none !important; }
+            .entry-card { margin-bottom: 10px !important; padding: 10px !important; }
+        }
+        
+        .header-section {
+            border-bottom: 3px solid #007bff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        
+        .entry-card {
+            border-left: 3px solid #007bff;
+            margin-bottom: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+        }
+        
+        .section-item {
+            margin-bottom: 5px;
+            padding-left: 15px;
+        }
+        
+        .status-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+        
+        .group-header {
+            background-color: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 15px 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header-section">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1><i class="fas fa-chart-bar text-primary"></i> Journal Summary Report</h1>
+                <h4 class="text-muted">{{ stats.date_range|default:"All Periods" }}</h4>
+            </div>
+            <div class="col-md-4 text-end">
+                <p class="mb-0"><strong>Generated:</strong> {{ export_date }}</p>
+                <p class="mb-0"><strong>Total Entries:</strong> {{ stats.total_entries|default:0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Controls -->
+    <div class="no-print mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <button onclick="window.print()" class="btn btn-primary">
+                    <i class="fas fa-print"></i> Print Report
+                </button>
+                <button onclick="window.close()" class="btn btn-secondary ms-2">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+            <div class="text-muted">
+                <small>This report contains {{ stats.total_entries|default:0 }} journal entries from {{ stats.authors_count|default:0 }} team members across {{ stats.departments_count|default:0 }} departments.</small>
+            </div>
+        </div>
+        <hr>
+    </div>
+
+    <!-- Summary Statistics -->
+    {% if status_summary %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Summary Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4">{{ stats.total_entries|default:0 }}</div>
+                                <small class="text-muted">Total Entries</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4 text-success">{{ status_summary.completed|default:0 }}</div>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4 text-primary">{{ status_summary.in_progress|default:0 }}</div>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4 text-warning">{{ status_summary.on_hold|default:0 }}</div>
+                                <small class="text-muted">On Hold</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4 text-secondary">{{ status_summary.not_started|default:0 }}</div>
+                                <small class="text-muted">Not Started</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="p-2 border rounded">
+                                <div class="fw-bold fs-4">{{ status_summary.total_items|default:0 }}</div>
+                                <small class="text-muted">Total Items</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Journal Entries -->
+    {% if grouped_entries %}
+        {% for group_name, entries in grouped_entries.items %}
+            <div class="group-section mb-4">
+                <div class="group-header">
+                    <h4 class="mb-0 text-primary">
+                        {% if group_by == 'department' %}
+                            <i class="fas fa-building"></i> {{ group_name }}
+                        {% elif group_by == 'author' %}
+                            <i class="fas fa-user"></i> {{ group_name }}
+                        {% else %}
+                            <i class="fas fa-calendar"></i> {{ group_name }}
+                        {% endif %}
+                        <span class="badge bg-secondary ms-2">{{ entries|length }} entries</span>
+                    </h4>
+                </div>
+                
+                {% for entry in entries %}
+                    <div class="entry-card border rounded">
+                        <!-- Entry Header -->
+                        <div class="row mb-2">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">
+                                    {% if group_by != 'author' %}
+                                        <i class="fas fa-user text-info"></i>
+                                        <strong>{{ entry.author.get_full_name|default:entry.author.username }}</strong>
+                                    {% endif %}
+                                    {% if group_by != 'department' %}
+                                        <i class="fas fa-building text-success ms-2"></i>
+                                        {{ entry.department.name }}
+                                    {% endif %}
+                                </h6>
+                                {% if group_by != 'date' %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ entry.date_from|date:"M d" }} - {{ entry.date_to|date:"M d, Y" }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <small class="text-muted">
+                                    Created: {{ entry.created_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Entry Content -->
+                        <div class="row">
+                            <!-- Highlights -->
+                            {% if entry.get_highlights_list %}
+                                <div class="col-md-6 mb-3">
+                                    <strong class="text-warning">
+                                        <i class="fas fa-star"></i> Highlights ({{ entry.get_highlights_list|length }})
+                                    </strong>
+                                    {% for highlight in entry.get_highlights_list %}
+                                        <div class="section-item">
+                                            <span class="status-badge badge bg-success">
+                                                {% if highlight.status == 'completed' %}Completed{% elif highlight.status == 'in_progress' %}In Progress{% elif highlight.status == 'on_hold' %}On Hold{% elif highlight.status == 'not_started' %}Not Started{% else %}{{ highlight.status|title }}{% endif %}
+                                            </span>
+                                            {{ highlight.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Challenges -->
+                            {% if entry.get_challenges_list %}
+                                <div class="col-md-6 mb-3">
+                                    <strong class="text-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> Challenges ({{ entry.get_challenges_list|length }})
+                                    </strong>
+                                    {% for challenge in entry.get_challenges_list %}
+                                        <div class="section-item">
+                                            <span class="status-badge badge bg-warning">
+                                                {% if challenge.status == 'completed' %}Completed{% elif challenge.status == 'in_progress' %}In Progress{% elif challenge.status == 'on_hold' %}On Hold{% elif challenge.status == 'not_started' %}Not Started{% else %}{{ challenge.status|title }}{% endif %}
+                                            </span>
+                                            {{ challenge.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Pendings -->
+                            {% if entry.get_pendings_list %}
+                                <div class="col-md-6 mb-3">
+                                    <strong class="text-info">
+                                        <i class="fas fa-clock"></i> Pendings ({{ entry.get_pendings_list|length }})
+                                    </strong>
+                                    {% for pending in entry.get_pendings_list %}
+                                        <div class="section-item">
+                                            <span class="status-badge badge bg-primary">
+                                                {% if pending.status == 'completed' %}Completed{% elif pending.status == 'in_progress' %}In Progress{% elif pending.status == 'on_hold' %}On Hold{% elif pending.status == 'not_started' %}Not Started{% else %}{{ pending.status|title }}{% endif %}
+                                            </span>
+                                            {{ pending.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Personal Updates -->
+                            {% if entry.get_personal_updates_list %}
+                                <div class="col-md-6 mb-3">
+                                    <strong class="text-success">
+                                        <i class="fas fa-user"></i> Personal Updates ({{ entry.get_personal_updates_list|length }})
+                                    </strong>
+                                    {% for update in entry.get_personal_updates_list %}
+                                        <div class="section-item">
+                                            <span class="status-badge badge bg-success">
+                                                {% if update.status == 'completed' %}Completed{% elif update.status == 'in_progress' %}In Progress{% elif update.status == 'on_hold' %}On Hold{% elif update.status == 'not_started' %}Not Started{% else %}{{ update.status|title }}{% endif %}
+                                            </span>
+                                            {{ update.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Strategies -->
+                            {% if entry.get_strategies_list %}
+                                <div class="col-md-12 mb-3">
+                                    <strong class="text-primary">
+                                        <i class="fas fa-lightbulb"></i> Strategies ({{ entry.get_strategies_list|length }})
+                                    </strong>
+                                    {% for strategy in entry.get_strategies_list %}
+                                        <div class="section-item">
+                                            <span class="status-badge badge bg-secondary">
+                                                {% if strategy.status == 'completed' %}Completed{% elif strategy.status == 'in_progress' %}In Progress{% elif strategy.status == 'on_hold' %}On Hold{% elif strategy.status == 'not_started' %}Not Started{% else %}{{ strategy.status|title }}{% endif %}
+                                            </span>
+                                            {{ strategy.text }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Comments Summary -->
+                        {% if entry.comments.count > 0 %}
+                            <div class="mt-2 pt-2 border-top">
+                                <small class="text-muted">
+                                    <i class="fas fa-comments"></i>
+                                    <strong>Comments:</strong> {{ entry.comments.count }} team comments on this entry
+                                </small>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <!-- Page break after each group for printing -->
+                {% if not forloop.last %}
+                    <div class="page-break"></div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4>No Entries Found</h4>
+            <p class="text-muted">No journal entries match the selected criteria.</p>
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="mt-4 pt-3 border-top text-center text-muted">
+        <small>
+            BR Journal Summary Report - Generated on {{ export_date }} 
+            <br>
+            Total: {{ stats.total_entries|default:0 }} entries | {{ stats.authors_count|default:0 }} authors | {{ stats.departments_count|default:0 }} departments
+        </small>
+    </div>
+
+    <script>
+        // Auto-print on load if requested
+        if (window.location.hash === '#print') {
+            window.onload = function() {
+                setTimeout(function() {
+                    window.print();
+                }, 500);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ app_name }} - Document History{% endblock %}
+
+{% block extra_css %}
+/* Override base template container for full-width */
+.container {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.container::before {
+    display: none !important;
+}
+
+body {
+    background: #f5f7fa;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.history-container {
+    width: 100%;
+    padding: 0 30px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px 0;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    width: 100%;
+    padding: 0 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: white;
+    color: #667eea;
+}
+
+.btn-primary:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.search-filters {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 150px;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 10px 15px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.history-table {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.table-header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.table-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.action-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.action-created {
+    background: #d4edda;
+    color: #155724;
+}
+
+.action-updated {
+    background: #cce5ff;
+    color: #0066cc;
+}
+
+.action-sent {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.action-exported {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.action-deleted {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-viewed {
+    background: #e7f3ff;
+    color: #0066cc;
+}
+
+.timestamp {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.document-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.pagination a,
+.pagination span {
+    padding: 10px 15px;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+}
+
+.pagination a:hover {
+    background: #f8f9fa;
+    border-color: #667eea;
+}
+
+.pagination .current {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.empty-state h3 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 10px 15px;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="header-content">
+        <div class="header-title">
+            <h1>📊 Document History</h1>
+            <p>Track all document activities and changes</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'document_list' %}" class="btn btn-primary">View Documents</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="history-container">
+    <!-- Search and Filters -->
+    <div class="search-filters">
+        <form method="get">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="search">Search History</label>
+                    <input type="text" id="search" name="search" placeholder="Search by document title or description..." 
+                           value="{{ search|default:'' }}">
+                </div>
+                <div class="filter-group">
+                    <label for="action">Action Type</label>
+                    <select id="action" name="action">
+                        <option value="">All Actions</option>
+                        {% for value, label in action_choices %}
+                            <option value="{{ value }}" {% if action == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- History Table -->
+    {% if history %}
+        <div class="history-table">
+            <div class="table-header">
+                <h3>Document Activity History</h3>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Action</th>
+                        <th>Description</th>
+                        <th>Date & Time</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in history %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'document_detail' item.document.pk %}" class="document-link">
+                                    {{ item.document.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="action-badge action-{{ item.action }}">
+                                    {{ item.get_action_display }}
+                                </span>
+                            </td>
+                            <td>{{ item.description|default:"—" }}</td>
+                            <td class="timestamp">{{ item.timestamp|date:"M d, Y g:i A" }}</td>
+                            <td>{{ item.user.get_full_name|default:item.user.username }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if history.has_other_pages %}
+            <div class="pagination">
+                {% if history.has_previous %}
+                    <a href="?{% if search %}search={{ search }}&{% endif %}{% if action %}action={{ action }}&{% endif %}page={{ history.previous_page_number }}">Previous</a>
+                {% endif %}
+                
+                {% for num in history.paginator.page_range %}
+                    {% if history.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% else %}
+                        <a href="?{% if search %}search={{ search }}&{% endif %}{% if action %}action={{ action }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if history.has_next %}
+                    <a href="?{% if search %}search={{ search }}&{% endif %}{% if action %}action={{ action }}&{% endif %}page={{ history.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <h3>No history found</h3>
+            <p>{% if search or action %}Try adjusting your search filters or{% else %}Document activities will appear here once you{% endif %} start creating and managing documents.</p>
+            <a href="{% url 'create_document' %}" class="btn btn-primary">Create Document</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

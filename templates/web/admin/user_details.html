@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+
+{% block title %}User Details - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.details-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.user-profile-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.user-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 2rem;
+    margin: 0 auto 15px;
+}
+
+.profile-content {
+    padding: 30px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.role-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.role-admin {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.role-superuser {
+    background: #f5c6cb;
+    color: #721c24;
+}
+
+.role-user {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.permissions-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.permission-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    color: white;
+}
+
+.permission-granted {
+    background: #28a745;
+}
+
+.permission-denied {
+    background: #dc3545;
+}
+
+.actions-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.activity-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e3f2fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.activity-time {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .permissions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <div class="header-content">
+        <div>
+            <h1 style="margin: 0;">👤 User Details</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.8;">View comprehensive user information</p>
+        </div>
+        <div>
+            <a href="{% url 'user_management' %}" class="btn btn-secondary">← Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<div class="details-container">
+    <!-- User Profile Card -->
+    <div class="user-profile-card">
+        <div class="profile-header">
+            <div class="user-avatar">
+                {{ user_to_view.first_name|first|default:user_to_view.username|first|upper }}
+            </div>
+            <h2>{{ user_to_view.get_full_name|default:user_to_view.username }}</h2>
+            <p style="margin: 0; opacity: 0.8;">@{{ user_to_view.username }}</p>
+        </div>
+        
+        <div class="profile-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value">{{ user_to_view.email }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Account Status</div>
+                    <div class="info-value">
+                        <span class="status-badge {% if user_to_view.is_active %}status-active{% else %}status-inactive{% endif %}">
+                            {% if user_to_view.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Role</div>
+                    <div class="info-value">
+                        {% if user_to_view.is_superuser %}
+                            <span class="role-badge role-superuser">Super Administrator</span>
+                        {% elif user_to_view.is_staff %}
+                            <span class="role-badge role-admin">Administrator</span>
+                        {% else %}
+                            <span class="role-badge role-user">Regular User</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Date Joined</div>
+                    <div class="info-value">{{ user_to_view.date_joined|date:"F d, Y" }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Last Login</div>
+                    <div class="info-value">
+                        {% if user_to_view.last_login %}
+                            {{ user_to_view.last_login|date:"F d, Y g:i A" }}
+                        {% else %}
+                            Never logged in
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">User ID</div>
+                    <div class="info-value">#{{ user_to_view.id }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Permissions Card -->
+    <div class="permissions-card">
+        <h3 style="margin-bottom: 20px;">🔐 User Permissions</h3>
+        <div class="permissions-grid">
+            <div class="permission-item">
+                <div class="permission-icon {% if user_to_view.is_active %}permission-granted{% else %}permission-denied{% endif %}">
+                    {% if user_to_view.is_active %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <strong>Active Account</strong><br>
+                    <small>Can log in and access system</small>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <div class="permission-icon {% if user_to_view.is_staff %}permission-granted{% else %}permission-denied{% endif %}">
+                    {% if user_to_view.is_staff %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <strong>Staff Status</strong><br>
+                    <small>Can access admin interface</small>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <div class="permission-icon {% if user_to_view.is_superuser %}permission-granted{% else %}permission-denied{% endif %}">
+                    {% if user_to_view.is_superuser %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <strong>Superuser Status</strong><br>
+                    <small>Has all permissions</small>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <div class="permission-icon {% if user_to_view.is_staff %}permission-granted{% else %}permission-denied{% endif %}">
+                    {% if user_to_view.is_staff %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <strong>User Management</strong><br>
+                    <small>Can manage other users</small>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <div class="permission-icon permission-granted">✓</div>
+                <div>
+                    <strong>Document Access</strong><br>
+                    <small>Can create and view documents</small>
+                </div>
+            </div>
+            
+            <div class="permission-item">
+                <div class="permission-icon {% if user_to_view.is_staff %}permission-granted{% else %}permission-denied{% endif %}">
+                    {% if user_to_view.is_staff %}✓{% else %}✗{% endif %}
+                </div>
+                <div>
+                    <strong>System Settings</strong><br>
+                    <small>Can modify system configuration</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Card -->
+    <div class="activity-card">
+        <h3 style="margin-bottom: 20px;">📊 Recent Activity</h3>
+        <div class="activity-item">
+            <div class="activity-icon">👤</div>
+            <div class="activity-content">
+                <div class="activity-title">Account Created</div>
+                <div class="activity-time">{{ user_to_view.date_joined|date:"F d, Y g:i A" }}</div>
+            </div>
+        </div>
+        
+        {% if user_to_view.last_login %}
+        <div class="activity-item">
+            <div class="activity-icon">🔐</div>
+            <div class="activity-content">
+                <div class="activity-title">Last Login</div>
+                <div class="activity-time">{{ user_to_view.last_login|date:"F d, Y g:i A" }}</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="activity-item">
+            <div class="activity-icon">📧</div>
+            <div class="activity-content">
+                <div class="activity-title">Email Verified</div>
+                <div class="activity-time">{{ user_to_view.email }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Card -->
+    <div class="actions-card">
+        <h3 style="margin-bottom: 20px;">⚙️ Available Actions</h3>
+        
+        <a href="{% url 'edit_user' user_to_view.id %}" class="btn btn-primary">✏️ Edit User</a>
+        
+        <a href="{% url 'reset_user_password' user_to_view.id %}" class="btn btn-warning">🔒 Reset Password</a>
+        
+        {% if user_to_view != user %}
+            {% if user_to_view.is_active %}
+                <button onclick="toggleUserStatus({{ user_to_view.id }}, '{{ user_to_view.username }}')" 
+                        class="btn btn-warning">⏸️ Deactivate User</button>
+            {% else %}
+                <button onclick="toggleUserStatus({{ user_to_view.id }}, '{{ user_to_view.username }}')" 
+                        class="btn btn-success">▶️ Activate User</button>
+            {% endif %}
+            
+            <button onclick="deleteUser({{ user_to_view.id }}, '{{ user_to_view.username }}')" 
+                    class="btn btn-danger">🗑️ Delete User</button>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleUserStatus(userId, username) {
+    const action = {% if user_to_view.is_active %}'deactivate'{% else %}'activate'{% endif %};
+    if (confirm(`Are you sure you want to ${action} user "${username}"?`)) {
+        fetch('{% url "toggle_user_status" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'user_id': userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteUser(userId, username) {
+    if (confirm(`Are you sure you want to permanently delete user "${username}"? This action cannot be undone.`)) {
+        fetch('{% url "delete_user" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'user_id': userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = '{% url "user_management" %}';
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('An error occurred. Please try again.');
+            console.error('Error:', error);
+        });
+    }
+}
+</script>
+{% endblock %}

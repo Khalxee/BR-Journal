@@ -1,0 +1,168 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}All Entries - BR Journal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2"><i class="fas fa-list"></i> All Journal Entries</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'journal:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Entry
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0"><i class="fas fa-filter"></i> Filters</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Department</label>
+                <select name="department" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept.id }}" 
+                                {% if current_filters.department == dept.id|stringformat:"s" %}selected{% endif %}>
+                            {{ dept.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Date From</label>
+                <input type="date" name="date_from" class="form-control" 
+                       value="{{ current_filters.date_from }}">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Date To</label>
+                <input type="date" name="date_to" class="form-control" 
+                       value="{{ current_filters.date_to }}">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Search</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search in content..." value="{{ current_filters.search }}">
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+                <a href="{% url 'journal:list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Entries -->
+<div class="row">
+    {% for journal in journals %}
+        <div class="col-md-6 mb-4">
+            <div class="card journal-card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">
+                            <i class="fas fa-building"></i>
+                            {{ journal.department.name }}
+                        </h6>
+                        <small class="text-muted">
+                            {{ journal.author.get_full_name|default:journal.author.username }}
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">
+                            {{ journal.date_from }} to {{ journal.date_to }}
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-star text-warning"></i> Highlights
+                    </h6>
+                    <p class="card-text">{{ journal.highlights|truncatewords:20 }}</p>
+                    
+                    {% if journal.challenges %}
+                        <h6 class="card-title mt-3">
+                            <i class="fas fa-exclamation-triangle text-danger"></i> Challenges
+                        </h6>
+                        <p class="card-text text-muted small">{{ journal.challenges|truncatewords:15 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i>
+                            {{ journal.created_at|date:"M d, Y H:i" }}
+                        </small>
+                        <div>
+                            <a href="{% url 'journal:detail' journal.pk %}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if journal.author == request.user %}
+                                <a href="{% url 'journal:update' journal.pk %}" 
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h4>No journal entries found</h4>
+                <p class="text-muted">{% if current_filters.search or current_filters.department or current_filters.date_from or current_filters.date_to %}
+                    Try adjusting your filters or
+                {% endif %}
+                <a href="{% url 'journal:create' %}">create your first entry</a>.</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in current_filters.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in current_filters.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in current_filters.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% for key, value in current_filters.items %}{% if value %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,297 @@
+{% extends 'journal/base.html' %}
+{% load journal_tags %}
+
+{% block title %}{{ report.title }} - BR Journal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-crown text-warning"></i>
+        {{ report.title }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{% url 'journal:topman_report_update' report.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Report
+            </a>
+            <a href="{% url 'journal:topman_tagging' %}?week_start={{ report.week_start|date:'Y-m-d' }}&week_end={{ report.week_end|date:'Y-m-d' }}" class="btn btn-info">
+                <i class="fas fa-tags"></i> Tag Items
+            </a>
+        </div>
+        <a href="{% url 'journal:topman_report_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Reports
+        </a>
+    </div>
+</div>
+
+<!-- Report Overview -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle"></i> Report Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-3">Report Period:</dt>
+                    <dd class="col-9">
+                        <strong>{{ report.week_start|date:"F d" }} - {{ report.week_end|date:"F d, Y" }}</strong>
+                        <span class="badge bg-info ms-2">
+                            {{ report.week_start|timesince }} ago
+                        </span>
+                    </dd>
+                    
+                    <dt class="col-3">Created By:</dt>
+                    <dd class="col-9">
+                        <i class="fas fa-user-shield text-warning"></i>
+                        {{ report.created_by.get_full_name|default:report.created_by.username }}
+                    </dd>
+                    
+                    <dt class="col-3">Total Tagged Items:</dt>
+                    <dd class="col-9">
+                        <span class="badge bg-primary fs-6">{{ all_tagged_items|length }}</span>
+                        {% if all_tagged_items %}
+                            <small class="text-muted ms-2">
+                                High: <span class="badge bg-danger">{{ priority_stats.high }}</span>
+                                Medium: <span class="badge bg-warning">{{ priority_stats.medium }}</span>  
+                                Low: <span class="badge bg-info">{{ priority_stats.low }}</span>
+                            </small>
+                        {% endif %}
+                    </dd>
+                    
+                    <dt class="col-3">Created:</dt>
+                    <dd class="col-9">{{ report.created_at|date:"F d, Y \a\t g:i A" }}</dd>
+                    
+                    {% if report.updated_at != report.created_at %}
+                        <dt class="col-3">Last Updated:</dt>
+                        <dd class="col-9">{{ report.updated_at|date:"F d, Y \a\t g:i A" }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i> Priority Breakdown
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="row g-2">
+                    <div class="col-4">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded">
+                            <i class="fas fa-exclamation-triangle text-danger fa-lg"></i>
+                            <div class="fw-bold fs-4">{{ priority_stats.high }}</div>
+                            <small class="text-muted">High</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded">
+                            <i class="fas fa-info-circle text-warning fa-lg"></i>
+                            <div class="fw-bold fs-4">{{ priority_stats.medium }}</div>
+                            <small class="text-muted">Medium</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3 bg-info bg-opacity-10 rounded">
+                            <i class="fas fa-check-circle text-info fa-lg"></i>
+                            <div class="fw-bold fs-4">{{ priority_stats.low }}</div>
+                            <small class="text-muted">Low</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Executive Summary -->
+{% if report.executive_summary %}
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="fas fa-file-alt"></i> Executive Summary
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="fs-5 text-dark">
+                {{ report.executive_summary|linebreaks }}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Tagged Items by Department -->
+{% if tagged_items_by_department %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-tags"></i> Tagged Items by Department
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for department, items in tagged_items_by_department.items %}
+                <div class="department-section mb-4">
+                    <h4 class="mb-3 pb-2 border-bottom">
+                        <i class="fas fa-building text-primary"></i>
+                        {{ department }}
+                        <span class="badge bg-primary ms-2">{{ items|length }} items</span>
+                    </h4>
+                    
+                    {% for tag in items %}
+                        <div class="tagged-item mb-3 p-3 border rounded {% if tag.priority == 'high' %}border-danger bg-danger bg-opacity-5{% elif tag.priority == 'medium' %}border-warning bg-warning bg-opacity-5{% else %}border-info bg-info bg-opacity-5{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex align-items-start mb-2">
+                                        <span class="badge bg-{{ tag.get_priority_color }} me-2">
+                                            <i class="fas fa-{{ tag.get_priority_icon }}"></i>
+                                            {{ tag.get_priority_display }}
+                                        </span>
+                                        <span class="badge bg-{{ tag.item_status|get_status_color }} me-2">
+                                            <i class="fas fa-{{ tag.item_status|get_status_icon }}"></i>
+                                            {{ tag.item_status|get_status_display }}
+                                        </span>
+                                        <span class="badge bg-secondary">{{ tag.get_section_display }}</span>
+                                    </div>
+                                    
+                                    <div class="item-text mb-2">
+                                        <strong>{{ tag.item_text }}</strong>
+                                    </div>
+                                    
+                                    {% if tag.admin_note %}
+                                        <div class="admin-note p-2 bg-light rounded small">
+                                            <i class="fas fa-sticky-note text-warning"></i>
+                                            <strong>Admin Note:</strong> {{ tag.admin_note }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="ms-3 text-end">
+                                    <div class="text-muted small">
+                                        <i class="fas fa-user"></i>
+                                        {{ tag.get_author_name }}
+                                    </div>
+                                    <div class="text-muted small">
+                                        {{ tag.journal_entry.date_from }} to {{ tag.journal_entry.date_to }}
+                                    </div>
+                                    <div class="text-muted small">
+                                        <i class="fas fa-clock"></i>
+                                        Tagged {{ tag.tagged_at|date:"M d, g:i A" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+<!-- Admin Added Items -->
+<div class="row">
+    <!-- Admin Highlights -->
+    {% if report.get_admin_highlights_list %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star"></i> Admin Highlights
+                        <span class="badge bg-dark ms-2">{{ report.get_admin_highlights_list|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for highlight in report.get_admin_highlights_list %}
+                        <div class="mb-3 p-2 border-start border-warning border-4 bg-warning bg-opacity-10">
+                            <div class="d-flex align-items-start mb-1">
+                                <span class="badge bg-{{ highlight.status|get_status_color }} me-2">
+                                    <i class="fas fa-{{ highlight.status|get_status_icon }}"></i>
+                                    {{ highlight.status|get_status_display }}
+                                </span>
+                            </div>
+                            <div>{{ highlight.text }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Admin Challenges -->
+    {% if report.get_admin_challenges_list %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Admin Challenges
+                        <span class="badge bg-light text-dark ms-2">{{ report.get_admin_challenges_list|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for challenge in report.get_admin_challenges_list %}
+                        <div class="mb-3 p-2 border-start border-danger border-4 bg-danger bg-opacity-10">
+                            <div class="d-flex align-items-start mb-1">
+                                <span class="badge bg-{{ challenge.status|get_status_color }} me-2">
+                                    <i class="fas fa-{{ challenge.status|get_status_icon }}"></i>
+                                    {{ challenge.status|get_status_display }}
+                                </span>
+                            </div>
+                            <div>{{ challenge.text }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Admin Strategies -->
+    {% if report.get_admin_strategies_list %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Admin Strategies
+                        <span class="badge bg-light text-dark ms-2">{{ report.get_admin_strategies_list|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% for strategy in report.get_admin_strategies_list %}
+                        <div class="mb-3 p-2 border-start border-primary border-4 bg-primary bg-opacity-10">
+                            <div class="d-flex align-items-start mb-1">
+                                <span class="badge bg-{{ strategy.status|get_status_color }} me-2">
+                                    <i class="fas fa-{{ strategy.status|get_status_icon }}"></i>
+                                    {{ strategy.status|get_status_display }}
+                                </span>
+                            </div>
+                            <div>{{ strategy.text }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Empty State -->
+{% if not all_tagged_items and not report.get_admin_highlights_list and not report.get_admin_challenges_list and not report.get_admin_strategies_list and not report.executive_summary %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-crown fa-3x text-muted mb-3"></i>
+            <h4>Report is Empty</h4>
+            <p class="text-muted mb-4">This report doesn't have any content yet. Add an executive summary, tag some items, or add admin items to get started.</p>
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'journal:topman_report_update' report.pk %}" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Add Content
+                </a>
+                <a href="{% url 'journal:topman_tagging' %}?week_start={{ report.week_start|date:'Y-m-d' }}&week_end={{ report.week_end|date:'Y-m-d' }}" class="btn btn-info">
+                    <i class="fas fa-tags"></i> Tag Items
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

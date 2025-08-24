@@ -1,0 +1,13 @@
+{
+  "name": "br-journal",
+  "version": "1.0.0",
+  "description": "Team Weekly Journal Application",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo 'Frontend development server'",
+    "build": "echo 'Frontend build'",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

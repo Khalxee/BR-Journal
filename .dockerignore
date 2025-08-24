@@ -1,0 +1,16 @@
+media
+static_root
+node_modules
+npm-debug.log
+**/.env
+venv
+.venv
+.direnv
+.pytest_cache
+.DS_Store
+*.log
+__pycache__
+*.pyc
+.git
+.gitignore
+README.md

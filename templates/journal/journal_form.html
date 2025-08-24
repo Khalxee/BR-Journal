@@ -1,0 +1,532 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}
+    {% if object %}Edit Entry{% else %}New Entry{% endif %} - BR Journal
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-{% if object %}edit{% else %}plus{% endif %}"></i>
+        {% if object %}Edit Entry{% else %}Create New Entry{% endif %}
+    </h1>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Weekly Journal Entry</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate id="journal-form">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="{{ form.department.id_for_label }}" class="form-label">
+                                <i class="fas fa-building"></i> Department *
+                            </label>
+                            {{ form.department }}
+                            {% if form.department.errors %}
+                                <div class="text-danger small">{{ form.department.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="{{ form.date_from.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar"></i> Date From *
+                            </label>
+                            {{ form.date_from }}
+                            {% if form.date_from.errors %}
+                                <div class="text-danger small">{{ form.date_from.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="{{ form.date_to.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar"></i> Date To *
+                            </label>
+                            {{ form.date_to }}
+                            {% if form.date_to.errors %}
+                                <div class="text-danger small">{{ form.date_to.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Form errors -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Dynamic Sections -->
+                    
+                    <!-- Highlights Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-star text-warning"></i> Highlights *
+                            </label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('highlights')">
+                                <i class="fas fa-plus"></i> Add Highlight
+                            </button>
+                        </div>
+                        <div id="highlights-container" class="dynamic-container">
+                            <!-- Dynamic highlights will be added here -->
+                        </div>
+                        <div class="form-text">Key achievements and successes this week</div>
+                    </div>
+
+                    <!-- Pendings Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-clock text-info"></i> Pendings
+                            </label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('pendings')">
+                                <i class="fas fa-plus"></i> Add Pending Item
+                            </button>
+                        </div>
+                        <div id="pendings-container" class="dynamic-container">
+                            <!-- Dynamic pendings will be added here -->
+                        </div>
+                        <div class="form-text">Tasks and items that are still pending or in progress</div>
+                    </div>
+
+                    <!-- Challenges Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-exclamation-triangle text-danger"></i> Challenges
+                            </label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('challenges')">
+                                <i class="fas fa-plus"></i> Add Challenge
+                            </button>
+                        </div>
+                        <div id="challenges-container" class="dynamic-container">
+                            <!-- Dynamic challenges will be added here -->
+                        </div>
+                        <div class="form-text">Obstacles, issues, or difficulties encountered</div>
+                    </div>
+
+                    <!-- Personal Updates Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-user text-success"></i> Personal Updates
+                            </label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('personal_updates')">
+                                <i class="fas fa-plus"></i> Add Update
+                            </button>
+                        </div>
+                        <div id="personal_updates-container" class="dynamic-container">
+                            <!-- Dynamic personal updates will be added here -->
+                        </div>
+                        <div class="form-text">Personal professional development or updates</div>
+                    </div>
+
+                    <!-- Strategies Section -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label mb-0">
+                                <i class="fas fa-lightbulb text-primary"></i> Strategies
+                            </label>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addItem('strategies')">
+                                <i class="fas fa-plus"></i> Add Strategy
+                            </button>
+                        </div>
+                        <div id="strategies-container" class="dynamic-container">
+                            <!-- Dynamic strategies will be added here -->
+                        </div>
+                        <div class="form-text">Plans, strategies, and next steps for upcoming period</div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            {% if object %}Update Entry{% else %}Create Entry{% endif %}
+                        </button>
+                        <a href="{% url 'journal:dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        {% if object %}
+                            <a href="{% url 'journal:detail' object.pk %}" class="btn btn-outline-info">
+                                <i class="fas fa-eye"></i> View Entry
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dynamic-container {
+    min-height: 50px;
+}
+
+.dynamic-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.dynamic-item:hover {
+    background-color: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.dynamic-item textarea {
+    border: none;
+    background: transparent;
+    resize: vertical;
+    min-height: 38px;
+    width: 100%;
+}
+
+.dynamic-item textarea:focus {
+    background-color: white;
+    border: 1px solid #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    border-radius: 4px;
+}
+
+.status-select {
+    min-width: 130px;
+    font-size: 0.875rem;
+}
+
+.remove-btn {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.remove-btn:hover {
+    opacity: 1;
+}
+
+.empty-state {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 30px;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.counter-badge {
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.item-content {
+    display: flex;
+    align-items: start;
+    gap: 10px;
+}
+
+.item-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-controls {
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.status-completed { background-color: #d4edda !important; border-color: #c3e6cb !important; }
+.status-in_progress { background-color: #cce7ff !important; border-color: #b3d9ff !important; }
+.status-on_hold { background-color: #fff3cd !important; border-color: #ffecb5 !important; }
+.status-not_started { background-color: #e2e3e5 !important; border-color: #d1d3d4 !important; }
+.status-cancelled { background-color: #f8d7da !important; border-color: #f5c6cb !important; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Status choices with their properties
+const statusChoices = [
+    {value: 'completed', label: 'Completed', color: 'success', default: ['highlights', 'personal_updates']},
+    {value: 'in_progress', label: 'In Progress', color: 'primary', default: ['pendings']},
+    {value: 'on_hold', label: 'On Hold', color: 'warning', default: ['challenges']},
+    {value: 'not_started', label: 'Not Started', color: 'secondary', default: ['strategies']},
+    {value: 'cancelled', label: 'Cancelled', color: 'danger', default: []}
+];
+
+// Global counters for each section
+const counters = {
+    highlights: 0,
+    pendings: 0,
+    challenges: 0,
+    personal_updates: 0,
+    strategies: 0
+};
+
+// Initialize form on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeForm();
+});
+
+function initializeForm() {
+    // Initialize each section with either existing data or one empty field
+    const sections = ['highlights', 'pendings', 'challenges', 'personal_updates', 'strategies'];
+    
+    sections.forEach(section => {
+        const container = document.getElementById(section + '-container');
+        
+        // Try to get existing data for editing
+        const existingData = getExistingData(section);
+        
+        if (existingData && existingData.length > 0) {
+            // Populate with existing data
+            existingData.forEach(item => {
+                const text = typeof item === 'object' ? item.text : item;
+                const status = typeof item === 'object' ? item.status : getDefaultStatus(section);
+                addItem(section, text, status);
+            });
+        } else {
+            // Add one empty field for highlights (required), empty state for others
+            if (section === 'highlights') {
+                addItem(section);
+            } else {
+                showEmptyState(section);
+            }
+        }
+    });
+}
+
+function getExistingData(section) {
+    // For editing mode, get data from the model
+    {% if object %}
+        const data = {
+            highlights: {{ object.get_highlights_list|safe }},
+            pendings: {{ object.get_pendings_list|safe }},
+            challenges: {{ object.get_challenges_list|safe }},
+            personal_updates: {{ object.get_personal_updates_list|safe }},
+            strategies: {{ object.get_strategies_list|safe }}
+        };
+        console.log('Loading existing data for', section, ':', data[section]); // Debug log
+        return data[section] || [];
+    {% else %}
+        return [];
+    {% endif %}
+}
+
+function getDefaultStatus(section) {
+    // Get default status for a section
+    const statusChoice = statusChoices.find(choice => choice.default.includes(section));
+    return statusChoice ? statusChoice.value : 'not_started';
+}
+
+function createStatusSelect(section, index, selectedStatus = null) {
+    const defaultStatus = selectedStatus || getDefaultStatus(section);
+    
+    let options = '';
+    statusChoices.forEach(choice => {
+        const selected = choice.value === defaultStatus ? 'selected' : '';
+        options += `<option value="${choice.value}" ${selected}>${choice.label}</option>`;
+    });
+    
+    return `<select name="${section}_status_${index}" class="form-select status-select" onchange="updateItemStyle(this)">
+                ${options}
+            </select>`;
+}
+
+function addItem(section, value = '', status = null) {
+    const container = document.getElementById(section + '-container');
+    const index = counters[section];
+    const defaultStatus = status || getDefaultStatus(section);
+    
+    // Remove empty state if it exists
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    // Create the dynamic item
+    const itemDiv = document.createElement('div');
+    itemDiv.className = `dynamic-item status-${defaultStatus}`;
+    itemDiv.innerHTML = `
+        <div class="item-content">
+            <div class="counter-badge">${index + 1}</div>
+            <div class="item-text">
+                <textarea 
+                    name="${section}_${index}" 
+                    class="form-control" 
+                    placeholder="Enter ${section.replace('_', ' ')} item..."
+                    rows="2"
+                    required="${section === 'highlights' ? 'true' : 'false'}"
+                >${value}</textarea>
+            </div>
+            <div class="item-controls">
+                ${createStatusSelect(section, index, defaultStatus)}
+                <button type="button" class="btn btn-outline-danger btn-sm remove-btn" 
+                        onclick="removeItem(this, '${section}')" title="Remove item">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(itemDiv);
+    counters[section]++;
+    
+    // Focus on the new textarea if it's empty
+    const textarea = itemDiv.querySelector('textarea');
+    if (!value) {
+        textarea.focus();
+    }
+    
+    // Auto-resize functionality
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Trigger auto-resize for existing content
+    if (value) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+}
+
+function updateItemStyle(selectElement) {
+    const itemDiv = selectElement.closest('.dynamic-item');
+    const newStatus = selectElement.value;
+    
+    // Remove all status classes
+    statusChoices.forEach(choice => {
+        itemDiv.classList.remove(`status-${choice.value}`);
+    });
+    
+    // Add new status class
+    itemDiv.classList.add(`status-${newStatus}`);
+}
+
+function removeItem(button, section) {
+    const itemDiv = button.closest('.dynamic-item');
+    const container = document.getElementById(section + '-container');
+    
+    itemDiv.remove();
+    
+    // Renumber remaining items
+    renumberItems(section);
+    
+    // Show empty state if no items remain
+    const remainingItems = container.querySelectorAll('.dynamic-item');
+    if (remainingItems.length === 0) {
+        showEmptyState(section);
+    }
+}
+
+function renumberItems(section) {
+    const container = document.getElementById(section + '-container');
+    const items = container.querySelectorAll('.dynamic-item');
+    
+    items.forEach((item, index) => {
+        const textarea = item.querySelector('textarea');
+        const statusSelect = item.querySelector('select');
+        const counter = item.querySelector('.counter-badge');
+        
+        // Update name attributes
+        textarea.name = `${section}_${index}`;
+        statusSelect.name = `${section}_status_${index}`;
+        
+        // Update counter display
+        counter.textContent = index + 1;
+    });
+    
+    // Update global counter
+    counters[section] = items.length;
+}
+
+function showEmptyState(section) {
+    const container = document.getElementById(section + '-container');
+    
+    // Don't show empty state if there are items
+    if (container.querySelectorAll('.dynamic-item').length > 0) {
+        return;
+    }
+    
+    const emptyDiv = document.createElement('div');
+    emptyDiv.className = 'empty-state';
+    emptyDiv.innerHTML = `
+        <i class="fas fa-plus-circle fa-2x mb-3" style="opacity: 0.5;"></i><br>
+        No ${section.replace('_', ' ')} added yet<br>
+        <small>Click "Add ${section.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}" to get started</small>
+    `;
+    
+    container.appendChild(emptyDiv);
+}
+
+// Form validation
+document.getElementById('journal-form').addEventListener('submit', function(e) {
+    // Check if highlights has at least one item
+    const highlightsContainer = document.getElementById('highlights-container');
+    const highlightItems = highlightsContainer.querySelectorAll('.dynamic-item textarea');
+    
+    let hasHighlights = false;
+    highlightItems.forEach(textarea => {
+        if (textarea.value.trim()) {
+            hasHighlights = true;
+        }
+    });
+    
+    if (!hasHighlights) {
+        e.preventDefault();
+        alert('Please add at least one highlight.');
+        return false;
+    }
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + Enter to add item to focused section
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.tagName === 'TEXTAREA') {
+            const section = activeElement.name.split('_')[0];
+            if (counters.hasOwnProperty(section)) {
+                e.preventDefault();
+                addItem(section);
+            }
+        }
+    }
+});
+
+// Status filter helper (for future enhancement)
+function getItemsByStatus(section, status) {
+    const container = document.getElementById(section + '-container');
+    const items = container.querySelectorAll('.dynamic-item');
+    return Array.from(items).filter(item => {
+        const select = item.querySelector('select');
+        return select && select.value === status;
+    });
+}
+</script>
+{% endblock %}

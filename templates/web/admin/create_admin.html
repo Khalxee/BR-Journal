@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Administrator - {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+body {
+    background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.admin-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.admin-type-selector {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-type-option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-type-option:hover {
+    border-color: #667eea;
+    background: #f8f9fa;
+}
+
+.admin-type-option input[type="radio"] {
+    margin-right: 15px;
+    transform: scale(1.2);
+}
+
+.admin-type-option.selected {
+    border-color: #667eea;
+    background: #e3f2fd;
+}
+
+.option-details h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.option-details p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.permissions-info {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    margin-bottom: 20px;
+}
+
+.permissions-info h5 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.permissions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.permissions-list li {
+    padding: 5px 0;
+    color: #555;
+}
+
+.permissions-list li:before {
+    content: "✓";
+    color: #28a745;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-danger {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+    <div class="header-content">
+        <div>
+            <h1 style="margin: 0;">👑 Create Administrator</h1>
+            <p style="margin: 5px 0 0 0; opacity: 0.8;">Add a new administrator to DocuApp</p>
+        </div>
+        <div>
+            <a href="{% url 'user_management' %}" class="btn btn-secondary">← Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<div class="form-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Admin Type Selection -->
+        <div class="admin-type-selector">
+            <h3 style="margin-bottom: 15px;">Administrator Type</h3>
+            
+            <div class="admin-type-option" onclick="selectAdminType('staff', this)">
+                <input type="radio" name="admin_type" value="staff" checked>
+                <div class="option-details">
+                    <h4>📋 Administrator</h4>
+                    <p>Standard admin access with user management capabilities</p>
+                </div>
+            </div>
+            
+            <div class="admin-type-option" onclick="selectAdminType('superuser', this)">
+                <input type="radio" name="admin_type" value="superuser">
+                <div class="option-details">
+                    <h4>👑 Super Administrator</h4>
+                    <p>Full system access with all administrative privileges</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permissions Information -->
+        <div class="permissions-info">
+            <h5>Administrator Permissions:</h5>
+            <ul class="permissions-list">
+                <li>Access admin dashboard</li>
+                <li>Manage user accounts</li>
+                <li>View all documents</li>
+                <li>Manage system settings</li>
+                <li>Access Django admin panel</li>
+            </ul>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" class="form-control" required>
+            </div>
+        </div>
+
+        <!-- Account Details -->
+        <div class="form-group">
+            <label for="username">Username *</label>
+            <input type="text" id="username" name="username" class="form-control" required 
+                   placeholder="Enter unique username">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" class="form-control" required 
+                   placeholder="admin@example.com">
+        </div>
+
+        <!-- Password -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" class="form-control" required 
+                       placeholder="Enter secure password">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password *</label>
+                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required 
+                       placeholder="Confirm password">
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">👑 Create Administrator</button>
+            <a href="{% url 'user_management' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function selectAdminType(type, element) {
+    // Remove selected class from all options
+    document.querySelectorAll('.admin-type-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    
+    // Add selected class to clicked option
+    element.classList.add('selected');
+    
+    // Check the radio button
+    element.querySelector('input[type="radio"]').checked = true;
+    
+    // Update permissions info based on selection
+    updatePermissionsInfo(type);
+}
+
+function updatePermissionsInfo(type) {
+    const permissionsInfo = document.querySelector('.permissions-info');
+    const permissionsList = permissionsInfo.querySelector('.permissions-list');
+    
+    let permissions = [
+        'Access admin dashboard',
+        'Manage user accounts',
+        'View all documents',
+        'Manage system settings',
+    ];
+    
+    if (type === 'superuser') {
+        permissions.push('Access Django admin panel');
+        permissions.push('Manage other administrators');
+        permissions.push('System configuration access');
+        permissions.push('Database management');
+    } else {
+        permissions.push('Access Django admin panel');
+    }
+    
+    permissionsList.innerHTML = permissions.map(perm => `<li>${perm}</li>`).join('');
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial selection
+    document.querySelector('.admin-type-option').classList.add('selected');
+    
+    // Password confirmation validation
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Passwords don't match");
+        } else {
+            confirmPassword.setCustomValidity('');
+        }
+    }
+    
+    password.addEventListener('input', validatePassword);
+    confirmPassword.addEventListener('input', validatePassword);
+});
+</script>
+{% endblock %}

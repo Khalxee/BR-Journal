@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ app_name }} - Profile{% endblock %}
+
+{% block content %}
+<div class="logo">
+    <h1>Your Profile</h1>
+    <p>Manage your account settings</p>
+</div>
+
+<div class="profile-info">
+    <h3>Account Information</h3>
+    <p><strong>Name:</strong> {{ user.get_full_name|default:user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Member since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+</div>
+
+<div class="nav-links" style="margin-top: 30px;">
+    <a href="{% url 'home' %}" class="nav-link">Back to Home</a>
+</div>
+{% endblock %}
